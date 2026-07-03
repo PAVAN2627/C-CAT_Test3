@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C-DAC C-CAT Mock Test – Section A</title>
+<style>
+:root{--primary:#1a237e;--accent:#f57c00;--correct:#2e7d32;--wrong:#c62828;--unattempted:#546e7a;--bg:#f0f2f5;--card:#ffffff;--border:#dde1e7}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:#222;min-height:100vh}
+.screen{display:none}
+.screen.active{display:block}
+#startScreen{min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+#startScreen.active{display:flex}
+.start-card{background:var(--card);border-radius:16px;padding:40px 36px;max-width:620px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.12);text-align:center}
+.start-card .logo{font-size:48px;margin-bottom:8px}
+.start-card h1{color:var(--primary);font-size:1.7rem;margin-bottom:4px}
+.start-card h2{color:var(--accent);font-size:1.1rem;font-weight:600;margin-bottom:20px}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0;text-align:left}
+.info-item{background:#f5f7ff;border-radius:10px;padding:12px 16px;border-left:4px solid var(--primary)}
+.info-item .label{font-size:.72rem;color:#888;text-transform:uppercase;letter-spacing:.5px}
+.info-item .value{font-size:1rem;font-weight:700;color:var(--primary);margin-top:2px}
+.marking-box{background:#fff8e1;border:1px solid #ffe082;border-radius:10px;padding:14px 18px;margin:16px 0;text-align:left}
+.marking-box h3{color:var(--accent);font-size:.9rem;margin-bottom:8px}
+.marking-row{display:flex;justify-content:space-between;font-size:.88rem;margin:4px 0}
+.btn-start{background:linear-gradient(135deg,var(--primary),#3949ab);color:#fff;border:none;padding:16px 48px;font-size:1.1rem;font-weight:700;border-radius:50px;cursor:pointer;margin-top:20px;letter-spacing:1px;box-shadow:0 4px 16px rgba(26,35,126,.3);transition:transform .15s,box-shadow .15s}
+.btn-start:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(26,35,126,.4)}
+#examScreen{min-height:100vh;padding-bottom:40px}
+.exam-header{background:linear-gradient(135deg,var(--primary),#3949ab);color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.exam-header h1{font-size:1rem;font-weight:700}
+.timer-box{background:rgba(255,255,255,.15);border-radius:8px;padding:6px 16px;font-size:1.2rem;font-weight:700;letter-spacing:2px;display:flex;align-items:center;gap:6px}
+.timer-box.warning{background:rgba(229,57,53,.7);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.7}}
+.progress-bar-wrap{background:rgba(255,255,255,.2);height:4px}
+.progress-bar{height:4px;background:var(--accent);transition:width .4s}
+.exam-body{display:flex;max-width:1200px;margin:0 auto;padding:24px 16px;gap:20px}
+.q-panel{flex:1;min-width:0}
+.q-nav-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.q-counter{font-size:.85rem;color:#666}
+.q-tags{display:flex;gap:6px}
+.tag{font-size:.72rem;padding:3px 10px;border-radius:20px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.tag-eng{background:#e3f2fd;color:#1565c0}
+.tag-apt{background:#f3e5f5;color:#6a1b9a}
+.tag-lr{background:#e8f5e9;color:#2e7d32}
+.passage-box{background:#fffde7;border:1px solid #ffe082;border-radius:10px;padding:16px 18px;margin-bottom:16px;font-size:.88rem;line-height:1.75;color:#333}
+.passage-box .passage-label{font-size:.72rem;font-weight:800;color:#f57c00;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+.question-card{background:var(--card);border-radius:14px;padding:28px;box-shadow:0 2px 12px rgba(0,0,0,.07);margin-bottom:16px}
+.q-number{font-size:.8rem;color:#999;margin-bottom:8px;font-weight:600}
+.q-text{font-size:1rem;line-height:1.6;margin-bottom:12px;color:#1a1a1a}
+.code-block{background:#1e2a3a;color:#a8d8a8;padding:16px;border-radius:8px;font-family:'Consolas','Courier New',monospace;font-size:.82rem;line-height:1.6;margin:12px 0 16px;overflow-x:auto;white-space:pre}
+.options{display:flex;flex-direction:column;gap:10px}
+.option-btn{display:flex;align-items:flex-start;gap:12px;background:#f8f9ff;border:2px solid var(--border);border-radius:10px;padding:13px 16px;cursor:pointer;font-size:.93rem;text-align:left;transition:all .15s;font-family:inherit;color:#222;line-height:1.5;width:100%}
+.option-btn:hover{border-color:var(--primary);background:#eef0ff}
+.option-btn.selected{border-color:var(--primary);background:#e8eaf6}
+.option-btn .opt-letter{min-width:26px;height:26px;border-radius:50%;background:var(--primary);color:#fff;font-weight:700;font-size:.8rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.option-btn.selected .opt-letter{background:var(--accent)}
+.q-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
+.btn{padding:10px 22px;border-radius:8px;border:none;cursor:pointer;font-size:.9rem;font-weight:600;transition:all .15s;font-family:inherit}
+.btn-prev{background:#eceff1;color:#546e7a}
+.btn-prev:hover{background:#cfd8dc}
+.btn-next{background:var(--primary);color:#fff}
+.btn-next:hover{background:#283593}
+.btn-skip{background:#fff3e0;color:var(--accent);border:1px solid #ffe082}
+.btn-skip:hover{background:#ffe082}
+.btn-submit{background:linear-gradient(135deg,#c62828,#e53935);color:#fff;margin-left:auto}
+.btn-submit:hover{background:#b71c1c}
+.palette-panel{width:240px;flex-shrink:0}
+.palette-card{background:var(--card);border-radius:14px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.07);position:sticky;top:80px}
+.palette-card h3{font-size:.85rem;color:#666;margin-bottom:14px;text-transform:uppercase;letter-spacing:.5px}
+.palette-legend{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:.72rem;color:#555}
+.legend-dot{width:12px;height:12px;border-radius:3px}
+.pal-answered{background:var(--primary)}
+.pal-current{background:var(--accent)}
+.pal-unattempted{background:#e0e0e0}
+.palette-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.pal-btn{width:36px;height:36px;border-radius:7px;border:none;cursor:pointer;font-size:.8rem;font-weight:700;background:#e0e0e0;color:#555;transition:all .12s}
+.pal-btn:hover{transform:scale(1.1)}
+.pal-btn.answered{background:var(--primary);color:#fff}
+.pal-btn.current{background:var(--accent);color:#fff}
+.score-mini{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:.82rem;color:#555}
+.score-mini span{font-weight:700;color:var(--primary)}
+#resultScreen{min-height:100vh;padding:24px 16px}
+.result-header{background:linear-gradient(135deg,var(--primary),#3949ab);color:#fff;border-radius:16px;padding:32px;text-align:center;max-width:900px;margin:0 auto 24px;box-shadow:0 8px 24px rgba(26,35,126,.25)}
+.result-header h1{font-size:1.5rem;margin-bottom:6px}
+.score-big{font-size:3.5rem;font-weight:900;margin:12px 0}
+.score-big span{font-size:1.5rem;opacity:.7}
+.result-meta{display:flex;justify-content:center;gap:32px;flex-wrap:wrap;margin-top:16px}
+.result-stat{text-align:center}
+.result-stat .num{font-size:1.8rem;font-weight:800}
+.result-stat .lbl{font-size:.75rem;opacity:.8;text-transform:uppercase;letter-spacing:.5px}
+.result-body{max-width:900px;margin:0 auto}
+.section-card{background:var(--card);border-radius:14px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.07);margin-bottom:20px}
+.section-card h2{font-size:1rem;color:var(--primary);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.topic-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.topic-name{width:200px;font-size:.88rem;font-weight:600;flex-shrink:0}
+.topic-bar-wrap{flex:1;background:#f0f2f5;border-radius:20px;height:16px;overflow:hidden}
+.topic-bar{height:100%;border-radius:20px;transition:width 1s ease}
+.topic-score{font-size:.82rem;color:#555;width:80px;text-align:right;flex-shrink:0}
+.improve-badge{display:inline-block;background:#ffebee;color:#c62828;border-radius:20px;padding:2px 10px;font-size:.72rem;font-weight:700;margin-left:8px}
+.good-badge{display:inline-block;background:#e8f5e9;color:#2e7d32;border-radius:20px;padding:2px 10px;font-size:.72rem;font-weight:700;margin-left:8px}
+.status-correct{color:var(--correct);font-weight:700}
+.status-wrong{color:var(--wrong);font-weight:700}
+.status-skip{color:var(--unattempted);font-weight:600}
+.ans-pill{display:inline-block;padding:2px 10px;border-radius:12px;font-size:.8rem;font-weight:700}
+.pill-correct{background:#e8f5e9;color:var(--correct)}
+.pill-wrong{background:#ffebee;color:var(--wrong)}
+.pill-skip{background:#eceff1;color:var(--unattempted)}
+/* Review Cards */
+.review-card{background:var(--card);border-radius:12px;margin-bottom:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06);border-left:5px solid #ccc}
+.review-card.rc-correct{border-left-color:var(--correct)}
+.review-card.rc-wrong{border-left-color:var(--wrong)}
+.review-card.rc-skip{border-left-color:var(--unattempted)}
+.rc-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px}
+.rc-meta{display:flex;align-items:center;gap:10px}
+.rc-num{font-size:.8rem;font-weight:800;color:#999;min-width:28px}
+.rc-topic{font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.4px}
+.rc-status{display:flex;align-items:center;gap:10px;font-size:.85rem;font-weight:700}
+.rc-marks{padding:3px 12px;border-radius:20px;font-size:.82rem;font-weight:800}
+.marks-correct{background:#e8f5e9;color:var(--correct)}
+.marks-wrong{background:#ffebee;color:var(--wrong)}
+.marks-skip{background:#eceff1;color:var(--unattempted)}
+.rc-body{padding:14px 16px}
+.rc-question{font-size:.95rem;line-height:1.6;color:#1a1a1a;margin-bottom:10px;font-weight:500}
+.rc-code{background:#1e2a3a;color:#a8d8a8;padding:12px 14px;border-radius:8px;font-family:'Consolas','Courier New',monospace;font-size:.78rem;line-height:1.6;margin:8px 0 12px;overflow-x:auto;white-space:pre}
+.rc-options{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+@media(max-width:600px){.rc-options{grid-template-columns:1fr}}
+.rc-opt{display:flex;align-items:flex-start;gap:9px;padding:9px 12px;border-radius:8px;font-size:.85rem;line-height:1.5;background:#f8f9ff;border:2px solid transparent}
+.rc-opt-letter{min-width:22px;height:22px;border-radius:50%;background:#ccc;color:#fff;font-weight:700;font-size:.72rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.opt-is-correct{background:#e8f5e9;border-color:var(--correct)}
+.opt-is-correct .rc-opt-letter{background:var(--correct)}
+.opt-is-wrong{background:#ffebee;border-color:var(--wrong)}
+.opt-is-wrong .rc-opt-letter{background:var(--wrong)}
+.opt-is-user{border-color:var(--primary)}
+.opt-is-user .rc-opt-letter{background:var(--primary)}
+.btn-retake{background:linear-gradient(135deg,var(--primary),#3949ab);color:#fff;border:none;padding:14px 40px;font-size:1rem;font-weight:700;border-radius:50px;cursor:pointer;margin:8px;box-shadow:0 4px 16px rgba(26,35,126,.3);transition:transform .15s;font-family:inherit}
+.btn-retake:hover{transform:translateY(-2px)}
+.result-actions{text-align:center;margin:24px 0}
+@media(max-width:700px){.exam-body{flex-direction:column}.palette-panel{width:100%;margin-left:0;margin-top:16px}.palette-card{position:static}.info-grid{grid-template-columns:1fr}.topic-name{width:120px;font-size:.78rem}}
+</style>
+</head>
+<body>
+
+<!-- START SCREEN -->
+<div id="startScreen" class="screen active">
+  <div class="start-card">
+    <div class="logo">&#128218;</div>
+    <h1>C-DAC C-CAT Mock Test</h1>
+    <h2>Section A &ndash; English, Aptitude &amp; Reasoning</h2>
+    <div class="info-grid">
+      <div class="info-item"><div class="label">Total Questions</div><div class="value">50 MCQs</div></div>
+      <div class="info-item"><div class="label">Total Marks</div><div class="value">150 Marks</div></div>
+      <div class="info-item"><div class="label">Duration</div><div class="value">60 Minutes</div></div>
+      <div class="info-item"><div class="label">Sections</div><div class="value">3 Topics</div></div>
+    </div>
+    <div class="marking-box">
+      <h3>&#9878; Marking Scheme</h3>
+      <div class="marking-row"><span>&#9989; Correct Answer</span><span style="color:#2e7d32;font-weight:700">+3 Marks</span></div>
+      <div class="marking-row"><span>&#10060; Wrong Answer</span><span style="color:#c62828;font-weight:700">&minus;1 Mark</span></div>
+      <div class="marking-row"><span>&#11036; Un-attempted</span><span style="color:#546e7a;font-weight:700">0 Marks</span></div>
+    </div>
+    <div class="info-grid" style="margin-top:0">
+      <div class="info-item"><div class="label">English</div><div class="value">20 Questions</div></div>
+      <div class="info-item"><div class="label">Quantitative Aptitude</div><div class="value">15 Questions</div></div>
+      <div class="info-item"><div class="label">Logical Reasoning</div><div class="value">15 Questions</div></div>
+    </div>
+    <button class="btn-start" onclick="startExam()">&#128640; START EXAM</button>
+  </div>
+</div>
+
+<!-- EXAM SCREEN -->
+<div id="examScreen" class="screen">
+  <div class="exam-header">
+    <h1>C-DAC C-CAT &middot; Section A</h1>
+    <div class="timer-box" id="timerBox">&#9201; <span id="timerDisplay">60:00</span></div>
+  </div>
+  <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
+  <div class="exam-body">
+    <div class="q-panel">
+      <div class="q-nav-top">
+        <div class="q-counter">Question <span id="currentQNum">1</span> of 50</div>
+        <div class="q-tags" id="qTags"></div>
+      </div>
+      <div class="question-card">
+        <div class="q-number" id="qNumber">Q1.</div>
+        <div class="q-text" id="qText"></div>
+        <div id="qCodeWrap"></div>
+        <div class="options" id="optionsContainer"></div>
+      </div>
+      <div class="q-actions">
+        <button class="btn btn-prev" onclick="navigate(-1)">&#8592; Previous</button>
+        <button class="btn btn-skip" onclick="skipQuestion()">Skip &#8594;</button>
+        <button class="btn btn-next" onclick="navigate(1)">Next &#8594;</button>
+        <button class="btn btn-submit" onclick="confirmSubmit()">Submit Exam</button>
+      </div>
+    </div>
+    <div class="palette-panel">
+      <div class="palette-card">
+        <h3>Question Palette</h3>
+        <div class="palette-legend">
+          <div class="legend-item"><div class="legend-dot pal-answered"></div> Answered</div>
+          <div class="legend-item"><div class="legend-dot pal-current"></div> Current</div>
+          <div class="legend-item"><div class="legend-dot pal-unattempted"></div> Not Attempted</div>
+        </div>
+        <div class="palette-grid" id="paletteGrid"></div>
+        <div class="score-mini">Answered: <span id="answeredCount">0</span> / 50<br>Skipped: <span id="skippedCount">50</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RESULT SCREEN -->
+<div id="resultScreen" class="screen">
+  <div class="result-header">
+    <div id="resultEmoji" style="font-size:2.5rem;margin-bottom:8px"></div>
+    <h1>Exam Completed!</h1>
+    <div class="score-big" id="scoreBig">0 <span>/ 150</span></div>
+    <div class="result-meta">
+      <div class="result-stat"><div class="num" id="resCorrect" style="color:#a5d6a7">0</div><div class="lbl">Correct</div></div>
+      <div class="result-stat"><div class="num" id="resWrong" style="color:#ef9a9a">0</div><div class="lbl">Wrong</div></div>
+      <div class="result-stat"><div class="num" id="resSkipped" style="color:#b0bec5">0</div><div class="lbl">Skipped</div></div>
+      <div class="result-stat"><div class="num" id="resAccuracy" style="color:#fff176">0%</div><div class="lbl">Accuracy</div></div>
+      <div class="result-stat"><div class="num" id="resTime" style="color:#80cbc4">0m</div><div class="lbl">Time Used</div></div>
+    </div>
+  </div>
+  <div class="result-body">
+    <div class="section-card"><h2>&#128202; Topic-wise Performance</h2><div id="topicAnalysis"></div></div>
+    <div class="section-card" id="improveCard"><h2>&#127919; Topics Needing Improvement</h2><div id="improveList"></div></div>
+    <div class="result-actions"><button class="btn-retake" onclick="retakeExam()">&#128260; Retake Exam</button></div>
+    <div class="section-card">
+      <h2>&#128203; Detailed Answer Review</h2>
+      <div style="display:flex;gap:16px;margin-bottom:16px;font-size:.82rem;flex-wrap:wrap">
+        <span style="display:flex;align-items:center;gap:6px"><span style="width:14px;height:14px;border-radius:3px;background:var(--correct);display:inline-block"></span>Correct</span>
+        <span style="display:flex;align-items:center;gap:6px"><span style="width:14px;height:14px;border-radius:3px;background:var(--wrong);display:inline-block"></span>Wrong (your pick)</span>
+        <span style="display:flex;align-items:center;gap:6px"><span style="width:14px;height:14px;border-radius:3px;background:var(--unattempted);display:inline-block"></span>Skipped</span>
+      </div>
+      <div id="reviewBody"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const questions = [
+  // ── ENGLISH: Reading Comprehension (Q1-Q5) ──
+  {topic:"English",topicKey:"eng",text:"The passage primarily discusses:",passage:true,options:["How AI will eliminate all human jobs","Benefits and challenges associated with AI adoption","Government policies regarding taxation","History of Artificial Intelligence"],answer:1},
+  {topic:"English",topicKey:"eng",text:"According to the passage, AI is expected to:",passage:true,options:["Replace every existing profession","Eliminate the need for education","Redefine job roles rather than eliminate all jobs","Stop technological advancement"],answer:2},
+  {topic:"English",topicKey:"eng",text:"Which of the following is <strong>NOT</strong> mentioned as a concern related to AI?",passage:true,options:["Privacy","Employment","Ethical use of data","Climate change"],answer:3},
+  {topic:"English",topicKey:"eng",text:"The author suggests that governments should:",passage:true,options:["Ban AI applications","Increase taxes on technology companies","Focus on reskilling workers","Reduce internet access"],answer:2},
+  {topic:"English",topicKey:"eng",text:"The tone of the passage is:",passage:true,options:["Sarcastic","Balanced and informative","Emotional","Humorous"],answer:1},
+  // ── ENGLISH: Vocabulary & Grammar (Q6-Q20) ──
+  {topic:"English",topicKey:"eng",text:"Choose the word nearest in meaning to <strong>METICULOUS</strong>",options:["Careless","Precise","Ordinary","Weak"],answer:1},
+  {topic:"English",topicKey:"eng",text:"Choose the antonym of <strong>TRANSPARENT</strong>",options:["Honest","Clear","Opaque","Visible"],answer:2},
+  {topic:"English",topicKey:"eng",text:'Fill in the blank: Neither of the proposals ______ accepted by the committee.',options:["were","are","was","have been"],answer:2},
+  {topic:"English",topicKey:"eng",text:"Choose the correct sentence.",options:["She is senior than me.","She is senior to me.","She is more senior than me.","She senior to me."],answer:1},
+  {topic:"English",topicKey:"eng",text:"Identify the error: (A) One of the students (B) have submitted (C) the assignment (D) on time",options:["One of the students","have submitted","the assignment","on time"],answer:1},
+  {topic:"English",topicKey:"eng",text:"Choose the correct article: He bought ______ umbrella yesterday.",options:["a","an","the","no article"],answer:1},
+  {topic:"English",topicKey:"eng",text:"Choose the correct preposition: She insisted ______ paying the bill herself.",options:["for","in","on","with"],answer:2},
+  {topic:"English",topicKey:"eng",text:'Choose the correct meaning of the idiom: <strong>"Burn the midnight oil."</strong>',options:["Waste electricity","Sleep late","Study or work till late at night","Light a lamp"],answer:2},
+  {topic:"English",topicKey:"eng",text:"Choose the correct spelling.",options:["Reciept","Receipt","Recepit","Receept"],answer:1},
+  {topic:"English",topicKey:"eng",text:'Choose the passive voice: "They have completed the project."',options:["The project completed.","The project has completed.","The project has been completed.","The project was completed."],answer:2},
+  {topic:"English",topicKey:"eng",text:'Choose the correct indirect speech: Rita said, "I will attend the interview tomorrow."',options:["Rita said that she would attend the interview the next day.","Rita said she attends tomorrow.","Rita said she will attend tomorrow.","Rita says she would attend."],answer:0},
+  {topic:"English",topicKey:"eng",text:"Choose the correct sentence.",options:["Hardly had I reached the station when the train left.","Hardly I reached the station when the train left.","Hardly had I reach the station when the train left.","Hardly reached I the station."],answer:0},
+  {topic:"English",topicKey:"eng",text:"Arrange the sentences logically: P. Finally, he submitted the project. Q. He collected the required data. R. He planned the work. S. He analysed the results.",options:["RQSP","QRSP","RSQP","QRPS"],answer:0},
+  {topic:"English",topicKey:"eng",text:"Fill in the blank: Had you informed me earlier, I ______ helped you.",options:["would have","will have","had","shall"],answer:0},
+  {topic:"English",topicKey:"eng",text:"Choose the most suitable synonym of <strong>DILIGENT</strong>",options:["Lazy","Careful and hardworking","Weak","Proud"],answer:1},
+  // ── QUANTITATIVE APTITUDE (Q21-Q35) ──
+  {topic:"Quantitative Aptitude",topicKey:"apt",text:"A shopkeeper marks an article 25% above the cost price and allows a 10% discount. His profit percentage is:",options:["10%","11.5%","12.5%","15%"],answer:2},
+  {topic:"Quantitative Aptitude",topicKey:"apt",text:"The average of 8 numbers is 24. If one number is removed, the average becomes 22. The removed number is:",options:["34","36","38","40"],answer:2},
+  {topic:"Quantitative Aptitude",topicKey:"apt",text:"A can complete a work in 12 days and B in 18 days. Working together, they will complete it in:",options:["6 days","7.2 days","8 days","9 days"],answer:1},
+  {topic:"Quantitative Aptitude",topicKey:"apt",text:"The least number that should be added to 995 to make it exactly divisible by 13 is:",options:["5","6","7","9"],answer:2},
+  {topic:"Quantitative Aptitude",topicKey:"apt",text:"The ratio of ages of A and B is 5 : 7. After 10 years, the ratio becomes 15 : 19. What is the present age of A?",options:["20 years","25 years","30 years","35 years"],answer:1},
+  {topic:"Quantitative Aptitude",topicKey:"apt",text:"A train 240 m long crosses a pole in 12 seconds. Its speed is:",options:["18 km/hr","36 km/hr","54 km/hr","72 km/hr"],answer:3},
+  {topic:"Quantitative Aptitude",topicKey:"apt",text:"The simple interest on ₹8,000 at 7.5% per annum for 4 years is:",options:["₹2,000","₹2,200","₹2,400","₹2,600"],answer:2},
+  {topic:"Quantitative Aptitude",topicKey:"apt",text:"A number exceeds its one-third by 48. The number is:",options:["60","72","84","96"],answer:1},
+  {topic:"Quantitative Aptitude",topicKey:"apt",text:"A bag contains 5 red, 4 blue and 3 green balls. One ball is drawn at random. The probability that it is <strong>not blue</strong> is:",options:["1/4","2/3","5/6","3/4"],answer:1},
+  {topic:"Quantitative Aptitude",topicKey:"apt",text:"The HCF and LCM of two numbers are 12 and 720 respectively. If one number is 144, the other number is:",options:["48","60","72","80"],answer:1},
+  {topic:"Quantitative Aptitude",topicKey:"apt",text:"If 15 men can complete a work in 24 days, then 18 men will complete the same work in:",options:["18 days","20 days","22 days","24 days"],answer:1},
+  {topic:"Quantitative Aptitude",topicKey:"apt",text:"The value of (125 × 64)<sup>1/3</sup> is:",options:["16","18","20","24"],answer:2},
+  {topic:"Quantitative Aptitude",topicKey:"apt",text:"A sum becomes ₹12,100 in 2 years and ₹13,310 in 3 years at compound interest. The rate of interest is:",options:["8%","10%","12%","15%"],answer:1},
+  {topic:"Quantitative Aptitude",topicKey:"apt",text:"If 2x + 5 = 17, then the value of 3x − 4 is:",options:["10","12","14","16"],answer:2},
+  {topic:"Quantitative Aptitude",topicKey:"apt",text:"The average weight of 12 students is 54 kg. If one student weighing 66 kg leaves the group, the new average is:",options:["52 kg","53 kg","54 kg","55 kg"],answer:1},
+  // ── LOGICAL REASONING (Q36-Q50) ──
+  {topic:"Logical Reasoning",topicKey:"lr",text:"If PEN = 12345, PIN = 14345, then PAN is:",options:["15345","12435","12545","Cannot be determined"],answer:3},
+  {topic:"Logical Reasoning",topicKey:"lr",text:"Find the next term: 3, 7, 15, 31, 63, ?",options:["95","127","129","131"],answer:1},
+  {topic:"Logical Reasoning",topicKey:"lr",text:"If A is the father of B, B is the sister of C, and C is the mother of D, then A is D's:",options:["Grandfather","Uncle","Father","Brother"],answer:0},
+  {topic:"Logical Reasoning",topicKey:"lr",text:"Find the odd one out.",options:["Circle","Triangle","Rectangle","Cube"],answer:3},
+  {topic:"Logical Reasoning",topicKey:"lr",text:"Statements: All laptops are computers. Some computers are tablets.<br>Conclusions: I. Some laptops are tablets. &nbsp; II. All laptops are computers.<br>Choose the correct option.",options:["Only I follows","Only II follows","Both follow","Neither follows"],answer:1},
+  {topic:"Logical Reasoning",topicKey:"lr",text:"A person walks 10 m North, then 10 m East, then 10 m South. How far is he from the starting point?",options:["0 m","10 m","14.14 m","20 m"],answer:1},
+  {topic:"Logical Reasoning",topicKey:"lr",text:"Which number replaces the question mark? 2, 6, 12, 20, 30, ?",options:["40","42","44","48"],answer:1},
+  {topic:"Logical Reasoning",topicKey:"lr",text:"Pointing to a photograph, Rahul said, &quot;He is the son of my grandfather&apos;s only son.&quot; Who is the person in the photograph?",options:["Rahul","Rahul's brother","Rahul's son","Rahul's cousin"],answer:0},
+  {topic:"Logical Reasoning",topicKey:"lr",text:"If in a certain code MANGO &rarr; OCPIQ, then APPLE &rarr; ?",options:["CRRNF","CRPNG","CQRNG","CQQNG"],answer:0},
+  {topic:"Logical Reasoning",topicKey:"lr",text:"Which one does <strong>NOT</strong> belong?",options:["Mercury","Venus","Mars","Moon"],answer:3},
+  {topic:"Logical Reasoning",topicKey:"lr",text:"Six friends P, Q, R, S, T and U sit in a row. P is left of Q. R is right of Q. T is left of P. U is at the extreme right. Who sits in the middle?",options:["P","Q","R","S"],answer:2},
+  {topic:"Logical Reasoning",topicKey:"lr",text:"If BOOK = 43 and PEN = 39, then NOTE = ?",options:["54","58","60","62"],answer:3},
+  {topic:"Logical Reasoning",topicKey:"lr",text:"Find the missing number: 8 : 64 :: 11 : ?",options:["99","110","121","132"],answer:2},
+  {topic:"Logical Reasoning",topicKey:"lr",text:"A cube has all six faces painted. It is cut into 64 equal smaller cubes. How many cubes will have exactly <strong>two</strong> painted faces?",options:["12","24","32","36"],answer:1},
+  {topic:"Logical Reasoning",topicKey:"lr",text:"Statements: Some engineers are programmers. All programmers are graduates.<br>Conclusions: I. Some engineers are graduates. &nbsp; II. All graduates are programmers.",options:["Only I follows","Only II follows","Both follow","Neither follows"],answer:0}
+];
+
+const tagColors={eng:{cls:"tag-eng",label:"English"},apt:{cls:"tag-apt",label:"Aptitude"},lr:{cls:"tag-lr",label:"Reasoning"}};
+const topicMeta={eng:{name:"English",color:"#1565c0"},apt:{name:"Quantitative Aptitude",color:"#6a1b9a"},lr:{name:"Logical Reasoning",color:"#2e7d32"}};
+const TOTAL_TIME=3600;
+let currentQ=0,userAnswers=new Array(50).fill(-1),timerInterval=null,timeLeft=TOTAL_TIME,examStartTime=null;
+
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+
+function startExam(){
+  userAnswers=new Array(50).fill(-1);currentQ=0;timeLeft=TOTAL_TIME;examStartTime=Date.now();
+  show('examScreen');buildPalette();renderQuestion(0);startTimer();
+}
+function retakeExam(){show('startScreen');/* reset handled in startExam */}
+
+function startTimer(){
+  if(timerInterval)clearInterval(timerInterval);
+  timerInterval=setInterval(()=>{timeLeft--;updateTimerDisplay();if(timeLeft<=0){clearInterval(timerInterval);showResult();}},1000);
+}
+function updateTimerDisplay(){
+  const m=Math.floor(timeLeft/60).toString().padStart(2,'0');
+  const s=(timeLeft%60).toString().padStart(2,'0');
+  document.getElementById('timerDisplay').textContent=m+':'+s;
+  document.getElementById('timerBox').classList.toggle('warning',timeLeft<=300);
+}
+
+const PASSAGE='Artificial Intelligence (AI) is rapidly transforming industries by automating repetitive tasks and assisting in complex decision-making. While AI improves productivity and reduces operational costs, it also raises concerns regarding employment, privacy, and ethical use of data. Experts argue that instead of replacing humans entirely, AI is more likely to redefine job roles by automating routine work while creating demand for new skills. Governments and educational institutions must therefore focus on reskilling workers and establishing ethical guidelines to ensure responsible adoption of AI technologies.';
+
+function renderQuestion(index){
+  const q=questions[index];currentQ=index;
+  document.getElementById('currentQNum').textContent=index+1;
+  document.getElementById('qNumber').textContent='Q'+(index+1)+'.';
+  document.getElementById('qText').innerHTML=q.text;
+  const codeWrap=document.getElementById('qCodeWrap');
+  if(q.passage){
+    codeWrap.innerHTML='<div class="passage-box"><div class="passage-label">&#128214; Read the Passage</div>'+PASSAGE+'</div>';
+  } else if(q.code){
+    codeWrap.innerHTML='<div class="code-block">'+escHtml(q.code)+'</div>';
+  } else {
+    codeWrap.innerHTML='';
+  }
+  const tag=tagColors[q.topicKey];
+  document.getElementById('qTags').innerHTML='<span class="tag '+tag.cls+'">'+tag.label+'</span>';
+  const container=document.getElementById('optionsContainer');container.innerHTML='';
+  const letters=['A','B','C','D'];
+  q.options.forEach((opt,i)=>{
+    const btn=document.createElement('button');
+    btn.className='option-btn'+(userAnswers[index]===i?' selected':'');
+    btn.innerHTML='<span class="opt-letter">'+letters[i]+'</span><span>'+opt+'</span>';
+    btn.onclick=()=>{userAnswers[currentQ]=i;renderQuestion(currentQ);};
+    container.appendChild(btn);
+  });
+  const answered=userAnswers.filter(a=>a!==-1).length;
+  document.getElementById('progressBar').style.width=(answered/50*100)+'%';
+  updatePalette();updateCounts();
+}
+
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function navigate(dir){const n=currentQ+dir;if(n>=0&&n<50)renderQuestion(n);}
+function skipQuestion(){if(currentQ<49)renderQuestion(currentQ+1);}
+
+function buildPalette(){
+  const grid=document.getElementById('paletteGrid');grid.innerHTML='';
+  for(let i=0;i<50;i++){const b=document.createElement('button');b.className='pal-btn';b.textContent=i+1;b.id='pal-'+i;b.onclick=()=>renderQuestion(i);grid.appendChild(b);}
+}
+function updatePalette(){
+  for(let i=0;i<50;i++){const b=document.getElementById('pal-'+i);if(!b)continue;b.className='pal-btn';if(i===currentQ)b.classList.add('current');else if(userAnswers[i]!==-1)b.classList.add('answered');}
+}
+function updateCounts(){
+  const ans=userAnswers.filter(a=>a!==-1).length;
+  document.getElementById('answeredCount').textContent=ans;
+  document.getElementById('skippedCount').textContent=50-ans;
+}
+
+function confirmSubmit(){
+  const u=userAnswers.filter(a=>a===-1).length;
+  const msg=u>0?'You have '+u+' unattempted question(s). Submit anyway?':'Submit the exam?';
+  if(confirm(msg))showResult();
+}
+
+function showResult(){
+  clearInterval(timerInterval);
+  const timeTaken=Math.round((Date.now()-examStartTime)/1000);
+  show('resultScreen');
+  let correct=0,wrong=0,skipped=0;
+  const tStats={eng:{c:0,w:0,s:0,t:20},apt:{c:0,w:0,s:0,t:15},lr:{c:0,w:0,s:0,t:15}};
+  questions.forEach((q,i)=>{
+    const ua=userAnswers[i],tk=q.topicKey;
+    if(ua===-1){skipped++;tStats[tk].s++;}
+    else if(ua===q.answer){correct++;tStats[tk].c++;}
+    else{wrong++;tStats[tk].w++;}
+  });
+  const score=correct*3-wrong;
+  const accuracy=correct+wrong>0?Math.round(correct/(correct+wrong)*100):0;
+  document.getElementById('scoreBig').innerHTML=score+' <span>/ 150</span>';
+  document.getElementById('resCorrect').textContent=correct;
+  document.getElementById('resWrong').textContent=wrong;
+  document.getElementById('resSkipped').textContent=skipped;
+  document.getElementById('resAccuracy').textContent=accuracy+'%';
+  document.getElementById('resTime').textContent=Math.round(timeTaken/60)+'m';
+  const pct=score/150*100;
+  document.getElementById('resultEmoji').textContent=pct>=80?'\uD83C\uDFC6':pct>=60?'\uD83C\uDF89':pct>=40?'\uD83D\uDC4D':pct>=20?'\uD83D\uDCDA':'\uD83D\uDE22';
+  renderTopicAnalysis(tStats);renderImprovementAreas(tStats);renderReviewTable();
+}
+
+function renderTopicAnalysis(ts){
+  const c=document.getElementById('topicAnalysis');c.innerHTML='';
+  Object.entries(ts).forEach(([k,s])=>{
+    const pct=s.t>0?Math.round(s.c/s.t*100):0;
+    const m=topicMeta[k];
+    const badge=pct>=60?'<span class="good-badge">&#10003; Good</span>':'<span class="improve-badge">&#9888; Needs Work</span>';
+    c.innerHTML+='<div class="topic-row"><div class="topic-name">'+m.name+badge+'</div><div class="topic-bar-wrap"><div class="topic-bar" style="width:'+pct+'%;background:'+m.color+'"></div></div><div class="topic-score">'+s.c+'/'+s.t+' ('+pct+'%)<br><small style="color:#999">&#9989;'+s.c+' &#10060;'+s.w+' &#11036;'+s.s+'</small></div></div>';
+  });
+}
+
+function renderImprovementAreas(ts){
+  const tips={eng:['Read passages carefully and identify the main idea before answering.','For grammar, revise subject-verb agreement, tenses, and article usage.','Learn common idioms and one-word substitutions frequently asked in C-CAT.','Practice active/passive voice and direct/indirect speech conversions.'],apt:['For percentage and profit/loss, practice the formula: SP = CP \u00d7 (1 + profit%)','Work-time problems: combined rate = 1/A + 1/B. Practice until fast.','For ratio/age problems, set up equations directly from the ratio given.','Revise HCF/LCM, simple and compound interest formulas daily.'],lr:['For coding-decoding, find the shift pattern (e.g., +2 for each letter).','Blood relation problems: draw a family tree diagram to avoid confusion.','Number series: check differences, ratios, squares, and cubes patterns.','Syllogism: use Venn diagrams. Only draw conclusions that must be true.']};
+  const list=document.getElementById('improveList');list.innerHTML='';
+  const needs=Object.entries(ts).filter(([k,s])=>s.t>0&&(s.c/s.t)<0.6).sort((a,b)=>(a[1].c/a[1].t)-(b[1].c/b[1].t));
+  if(!needs.length){list.innerHTML='<p style="color:#2e7d32;font-weight:600">&#127881; Excellent! You scored &ge;60% in all topics!</p>';return;}
+  needs.forEach(([k,s])=>{
+    const m=topicMeta[k];const pct=Math.round(s.c/s.t*100);
+    list.innerHTML+='<div style="margin-bottom:20px;padding:16px;background:#fff8f8;border-radius:10px;border-left:4px solid '+m.color+'"><div style="font-weight:700;font-size:1rem;color:'+m.color+';margin-bottom:8px">'+m.name+' &mdash; '+pct+'% ('+s.c+'/'+s.t+' correct)</div><ul style="padding-left:18px;font-size:.87rem;line-height:1.8;color:#333">'+tips[k].map(t=>'<li>'+t+'</li>').join('')+'</ul></div>';
+  });
+}
+
+function renderReviewTable(){
+  const container=document.getElementById('reviewBody');container.innerHTML='';
+  const L=['A','B','C','D'];
+  questions.forEach((q,i)=>{
+    const ua=userAnswers[i];const ok=ua===q.answer;const sk=ua===-1;
+    const m=topicMeta[q.topicKey];
+    // card border & status
+    const cardCls=sk?'rc-skip':ok?'rc-correct':'rc-wrong';
+    const statusIcon=sk?'&#11036; Skipped':ok?'&#9989; Correct':'&#10060; Wrong';
+    const marksCls=sk?'marks-skip':ok?'marks-correct':'marks-wrong';
+    const marksVal=sk?'0':ok?'+3':'&minus;1';
+    // topic tag colours reuse topicMeta color
+    const topicStyle='background:'+m.color+'22;color:'+m.color;
+    // code block / passage
+    const codeHtml=q.passage
+      ?'<div class="passage-box" style="font-size:.82rem"><div class="passage-label">&#128214; Passage</div>'+PASSAGE+'</div>'
+      :q.code?'<div class="rc-code">'+escHtml(q.code)+'</div>':'';
+    // options
+    let optsHtml='<div class="rc-options">';
+    q.options.forEach((opt,oi)=>{
+      let cls='rc-opt';
+      if(oi===q.answer) cls+=' opt-is-correct';
+      else if(!sk && oi===ua) cls+=' opt-is-wrong';
+      optsHtml+='<div class="'+cls+'"><span class="rc-opt-letter">'+L[oi]+'</span><span>'+opt+'</span></div>';
+    });
+    optsHtml+='</div>';
+    // your answer note (only if wrong or skipped)
+    let yourNote='';
+    if(sk) yourNote='<div style="margin-top:10px;font-size:.82rem;color:var(--unattempted);font-weight:600">&#9679; Not attempted</div>';
+    else if(!ok) yourNote='<div style="margin-top:10px;font-size:.82rem;color:var(--wrong);font-weight:600">&#9679; You chose: <strong>'+L[ua]+' &mdash; '+q.options[ua]+'</strong></div>';
+
+    container.innerHTML+=
+      '<div class="review-card '+cardCls+'">'+
+        '<div class="rc-header">'+
+          '<div class="rc-meta">'+
+            '<span class="rc-num">Q'+(i+1)+'</span>'+
+            '<span class="rc-topic" style="'+topicStyle+'">'+m.name+'</span>'+
+          '</div>'+
+          '<div class="rc-status">'+
+            '<span>'+statusIcon+'</span>'+
+            '<span class="rc-marks '+marksCls+'">'+marksVal+' mark'+(marksVal==='0'?'s':'')+'</span>'+
+          '</div>'+
+        '</div>'+
+        '<div class="rc-body">'+
+          '<div class="rc-question">'+q.text+'</div>'+
+          codeHtml+
+          optsHtml+
+          yourNote+
+        '</div>'+
+      '</div>';
+  });
+}
+</script>
+</body>
+</html>
